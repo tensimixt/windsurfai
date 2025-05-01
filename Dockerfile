@@ -1,4 +1,4 @@
-# Dockerfile for Windsurf IDE on Akash Network (Final Update)
+# Dockerfile for Windsurf IDE on Akash Network (Final Update 2)
 
 # Use Ubuntu 20.04 as the base image
 FROM ubuntu:20.04
@@ -7,7 +7,7 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install necessary packages: supervisord, wget, gnupg, sudo, net-tools, 
-# TigerVNC, OpenBox, and other dependencies for GUI applications
+# TigerVNC, OpenBox, Python, pip, git, and other dependencies for GUI applications
 RUN apt-get update && apt-get install -y --no-install-recommends \
     supervisor \
     wget \
@@ -21,12 +21,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dbus-x11 \
     ca-certificates \
     curl \
+    python3-pip \
+    git \
     # Clean up apt cache
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install Windsurf IDE .deb package using the correct URL
-# Found URL structure in AUR PKGBUILD: https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=windsurf
 ARG WINDSURF_VERSION="1.7.3"
 ARG WINDSURF_DEB_URL="https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt/pool/main/w/windsurf/Windsurf-linux-x64-${WINDSURF_VERSION}.deb"
 RUN wget "${WINDSURF_DEB_URL}" -O windsurf_amd64.deb \
@@ -38,15 +39,16 @@ RUN wget "${WINDSURF_DEB_URL}" -O windsurf_amd64.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install easy-novnc
-RUN wget https://github.com/geek1011/easy-novnc/releases/download/v1.2.0/easy-novnc_1.2.0_amd64.deb \
-    && dpkg -i easy-novnc_1.2.0_amd64.deb \
-    && rm easy-novnc_1.2.0_amd64.deb
+# Install websockify using pip
+RUN pip3 install websockify
+
+# Clone the noVNC repository which contains the web client files
+RUN git clone https://github.com/novnc/noVNC.git /usr/share/novnc
 
 # Copy supervisord configuration file
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expose the port easy-novnc will listen on
+# Expose the port websockify will listen on
 EXPOSE 8080
 
 # Set the entrypoint to supervisord
