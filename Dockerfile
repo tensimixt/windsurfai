@@ -1,4 +1,4 @@
-# Dockerfile for Windsurf IDE on Akash Network (Final Update 2)
+# Dockerfile for Windsurf IDE on Akash Network (Final Update 3)
 
 # Use Ubuntu 20.04 as the base image
 FROM ubuntu:20.04
@@ -44,6 +44,9 @@ RUN pip3 install websockify
 
 # Clone the noVNC repository which contains the web client files
 RUN git clone https://github.com/novnc/noVNC.git /usr/share/novnc
+
+# Create a dummy project directory
+RUN mkdir -p /home/ubuntu/project
 
 # Copy supervisord configuration file
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
